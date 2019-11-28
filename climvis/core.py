@@ -5,7 +5,7 @@ import shutil
 import xarray as xr
 import numpy as np
 from motionless import DecoratedMap, LatLonMarker
-from climvis import cfg, graphics
+from climvis import cfg, graphics, wind_data
 import warnings
 import sys
 
@@ -147,6 +147,32 @@ def write_html(lon, lat, directory=None, zoom=None):
         for txt in lines:
             txt = txt.replace('[LONLAT]', lonlat_str)
             txt = txt.replace('[IMGURL]', url)
+            out.append(txt)
+        with open(outpath, 'w') as outfile:
+            outfile.writelines(out)
+
+    return outpath
+
+def write_html_wind_rose(station, days, directory=None, zoom=None):
+     # Set defaults
+    if directory is None:
+        directory = mkdtemp()
+
+    if zoom is None:
+        zoom = cfg.default_zoom
+    mkdir(directory)
+
+    # Make the plot
+    png = os.path.join(directory, 'windrose.png')
+    directions_and_speed, data_wind = wind_data.name_to_data(station, days)
+    graphics.plot_windrose(data_wind['dd'], data_wind['ff'], filepath=png)
+    outpath = os.path.join(directory, 'index_windrose.html')
+    with open(cfg.html_tpl_windrose, 'r') as infile:
+        lines = infile.readlines()
+        out = []
+        for txt in lines:
+            txt = txt.replace('[STATION]', station)
+            txt = txt.replace('[DAYS]', days)
             out.append(txt)
         with open(outpath, 'w') as outfile:
             outfile.writelines(out)

@@ -28,6 +28,7 @@ for file in (cru_tmp_file, cru_pre_file, cru_topo_file):
 
 bdir = os.path.dirname(__file__)
 html_tpl = os.path.join(bdir, 'data', 'template.html')
+html_tpl_windrose = os.path.join(bdir, 'data', 'template_windrose.html')
 world_cities = os.path.join(bdir, 'data', 'world_cities.csv')
 
 default_zoom = 8

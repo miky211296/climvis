@@ -3,15 +3,15 @@
 """
 Created on Wed Oct 30 11:34:34 2019
 
-@author: stefano
+@author: Michele
 """
 
 from urllib.request import Request, urlopen
 import json
 import numpy as np
 from windrose import WindroseAxes
-from matplotlib import pyplot as plt
-import matplotlib.cm as cm
+#from matplotlib import pyplot as plt
+#import matplotlib.cm as cm
 #import argparse
 
 base_url = 'http://meteo145.uibk.ac.at'
@@ -199,6 +199,11 @@ def name_to_data(station_name, days, base_url = base_url):
             'days': days, 'max_wind': max_wind_speed,
             'max_wind_1hr': max_wind_1hr}, data
             
+def windrose_data(wind_direction, wind_speed, figure):
+    ax = WindroseAxes.from_ax(fig = figure)
+    ax.bar(wind_direction, wind_speed, normed=True, opening=1.0, edgecolor='white')
+    ax.set_legend()
+    return ax
     
 def direction_message(prevailing_directions_and_speed_dict):
     """

@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+from climvis import wind_data
 
 def plot_annual_cycle(df, filepath=None):
 
@@ -28,3 +28,9 @@ def plot_annual_cycle(df, filepath=None):
         plt.close()
 
     return f
+
+def plot_windrose(wind_direction, wind_speed, filepath):
+    fig = plt.figure(figsize=(6,4))
+    ax = wind_data.windrose_data(wind_direction,wind_speed, fig)
+    if filepath is not None:
+        fig.savefig(filepath, dpi=150)

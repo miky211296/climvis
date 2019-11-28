@@ -184,7 +184,8 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.
     package_data={'climvis': ['data/template.html',
-                              'data/world_cities.csv'
+                              'data/world_cities.csv',
+                              'data/template_windrose.html'
                               ]
                   },
 

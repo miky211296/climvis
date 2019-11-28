@@ -9,6 +9,11 @@ Usage:
    -v, --version         : print the installed version
    -l, --loc [LON] [LAT] : the location at which the climate data must be
                            extracted
+   -w, --windrose [STATION] [DAYS]: windrose at one of the possible stations 
+                                    and for one of the possible days.       
+                                    possible_stations : ['innsbruck',
+                                    'ellboegen', 'obergurgl', 'sattelberg']
+                                    possible_days :['1', '3', '7']                        
    --no-browser          : the default behavior is to open a browser with the
                            newly generated visualisation. Set to ignore
                            and print the path to the html file instead
@@ -33,16 +38,19 @@ def cruvis_io(args):
         print('cruvis: ' + climvis.__version__)
         print('License: public domain')
         print('cruvis is provided "as is", without warranty of any kind')
-    elif args[0] in ['-l', '--loc']:
+    elif args[0] in ['-l', '--loc'] and args[3] in ['-w', '--windrose']:
         if len(args) < 3:
             print('cruvis --loc needs lon and lat parameters!')
             return
         lon, lat = float(args[1]), float(args[2])
         html_path = climvis.write_html(lon, lat)
+        station, days = args[4], args[5] 
+        html_path_windrose = climvis.write_html_wind_rose(station, days)
         if '--no-browser' in args:
             print('File successfully generated at: ' + html_path)
         else:
             webbrowser.get().open_new_tab(html_path)
+            webbrowser.get().open_new_tab(html_path_windrose)
     else:
         print('cruvis: command not understood. '
               'Type "cruvis --help" for usage options.')
