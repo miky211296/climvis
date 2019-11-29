@@ -70,12 +70,12 @@ def perc_dir_from_data(data):
     sector = 360/n_sectors
 #    midpoints = [i*sector for i in range(0, n_sectors)]
     
-    sector_names = ['N', 'NW', 'W', 'SW', 'S', 'SE', 'E', 'NE']
+    sector_names = ['N', 'NE', 'E', 'SE', 'S', 'SW','W', 'NW']
     
     wind_dir_count = {name: 0 for name in sector_names}
         
     for wind_dir in data['dd']:
-        sec = int((wind_dir + int(sector/2)) % 360 / sector)
+        sec = int(((wind_dir + int(sector/2)) % 360) / sector)
         wind_dir_count[sector_names[sec]] += 1
 
     total_counts = sum(wind_dir_count.values())
@@ -111,17 +111,26 @@ def max_wind(ff, time):
     """
     max_wind_speed = {'speed': max(ff), 'time': time[ff.index(max(ff))]}
     
-    meas_per_hr = 6
-    
     ff = np.array(ff)
+    time_array = np.array(time)
+    meas_per_hr = 6
+    less_than_one_hour = np.arange(1,6)
+    remainder = len(ff)%meas_per_hr
+    if remainder != 0:
+        partial_data = ff[-remainder:]
+        partial_time = time_array[-remainder:]
+        ff = ff[:-remainder]
+        time_array = time_array[:-remainder]
     ff = ff.reshape(int(len(ff)/meas_per_hr), meas_per_hr)
     ff = ff.mean(axis = 1)
-    
-    time_array = np.array(time)
     time_array = time_array.reshape(int(len(time_array)/meas_per_hr), 
-                                    meas_per_hr)
-    time_array = time_array.min(axis = 1)
-
+                              meas_per_hr)
+    time_array = time_array.max(axis = 1)
+    if remainder in less_than_one_hour[-2:]:
+        partial_data = partial_data.mean()
+        np.append(ff,partial_data)
+        np.append(time_array,partial_time.max())
+     
     max_wind_1hr = {'speed': max(ff), 'time': time_array[ff.argmax()]}    
     
     return max_wind_speed, max_wind_1hr
@@ -201,7 +210,8 @@ def name_to_data(station_name, days, base_url = base_url):
             
 def windrose_data(wind_direction, wind_speed, figure):
     ax = WindroseAxes.from_ax(fig = figure)
-    ax.bar(wind_direction, wind_speed, normed=True, opening=1.0, edgecolor='white')
+    ax.bar(wind_direction, wind_speed, normed=True, opening=1, edgecolor='white',
+           nsector = 8)
     ax.set_legend()
     return ax
     

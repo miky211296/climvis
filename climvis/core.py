@@ -165,6 +165,7 @@ def write_html_wind_rose(station, days, directory=None, zoom=None):
     # Make the plot
     png = os.path.join(directory, 'windrose.png')
     directions_and_speed, data_wind = wind_data.name_to_data(station, days)
+    message = wind_data.direction_message(directions_and_speed)
     graphics.plot_windrose(data_wind['dd'], data_wind['ff'], filepath=png)
     outpath = os.path.join(directory, 'index_windrose.html')
     with open(cfg.html_tpl_windrose, 'r') as infile:
@@ -173,6 +174,7 @@ def write_html_wind_rose(station, days, directory=None, zoom=None):
         for txt in lines:
             txt = txt.replace('[STATION]', station)
             txt = txt.replace('[DAYS]', days)
+            txt = txt.replace('[MESSAGE]', message)
             out.append(txt)
         with open(outpath, 'w') as outfile:
             outfile.writelines(out)
