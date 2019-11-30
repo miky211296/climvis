@@ -153,20 +153,37 @@ def write_html(lon, lat, directory=None, zoom=None):
 
     return outpath
 
-def write_html_wind_rose(station, days, directory=None, zoom=None):
+def write_html_wind_rose(station, days, directory=None):
+    """writes html file for selected station and selected days.
+
+    Parameters
+    ----------
+    station: str
+        The name of the station. All lowercase.
+    
+    days: str
+        The number of days.    
+        
+    directory: str, optional
+        The path where create the directory
+        
+    Returns
+    -------
+    html file
+    """
      # Set defaults
     if directory is None:
         directory = mkdtemp()
 
-    if zoom is None:
-        zoom = cfg.default_zoom
     mkdir(directory)
 
     # Make the plot
     png = os.path.join(directory, 'windrose.png')
     directions_and_speed, data_wind = wind_data.name_to_data(station, days)
     message = wind_data.direction_message(directions_and_speed)
+    #creates windrose.png with the plot
     graphics.plot_windrose(data_wind['dd'], data_wind['ff'], filepath=png)
+    
     outpath = os.path.join(directory, 'index_windrose.html')
     with open(cfg.html_tpl_windrose, 'r') as infile:
         lines = infile.readlines()

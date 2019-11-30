@@ -2,6 +2,8 @@ import webbrowser
 import sys
 import climvis
 
+#aggiungere nell HELP windrose: windrose visualization for selected station
+# and number of days
 HELP = """cruvis: CRU data visualization at a selected location.
 
 Usage:
@@ -38,6 +40,8 @@ def cruvis_io(args):
         print('cruvis: ' + climvis.__version__)
         print('License: public domain')
         print('cruvis is provided "as is", without warranty of any kind')
+        #TODO: GESTIONE ARGOMENTI DA IMPLEMENTARE: per ora ho messo abbastanza
+        #a caso per vedere che funzionasse
     elif args[0] in ['-l', '--loc'] and args[3] in ['-w', '--windrose']:
         if len(args) < 3:
             print('cruvis --loc needs lon and lat parameters!')
@@ -50,6 +54,7 @@ def cruvis_io(args):
             print('File successfully generated at: ' + html_path)
         else:
             webbrowser.get().open_new_tab(html_path)
+            #open browser page for windrose
             webbrowser.get().open_new_tab(html_path_windrose)
     else:
         print('cruvis: command not understood. '

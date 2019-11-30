@@ -114,11 +114,16 @@ def max_wind(ff, time):
     ff = np.array(ff)
     time_array = np.array(time)
     meas_per_hr = 6
+    #it may happen some wind data are not taken by the system
     less_than_one_hour = np.arange(1,6)
-    remainder = len(ff)%meas_per_hr
+    #how many data don't complete a hour ?
+    remainder = len(ff)%meas_per_hr 
+    #if I have some data that don't complete a hour
     if remainder != 0:
+        #save the extra-data
         partial_data = ff[-remainder:]
         partial_time = time_array[-remainder:]
+        #Remove those extra-data
         ff = ff[:-remainder]
         time_array = time_array[:-remainder]
     ff = ff.reshape(int(len(ff)/meas_per_hr), meas_per_hr)
@@ -126,6 +131,7 @@ def max_wind(ff, time):
     time_array = time_array.reshape(int(len(time_array)/meas_per_hr), 
                               meas_per_hr)
     time_array = time_array.max(axis = 1)
+    #If I miss only 1 or 2 data to complete the hour, I consider them anyway
     if remainder in less_than_one_hour[-2:]:
         partial_data = partial_data.mean()
         np.append(ff,partial_data)
@@ -137,7 +143,8 @@ def max_wind(ff, time):
 
 def name_to_data(station_name, days, base_url = base_url):
     """
-    Computes all releveant data to a station given its name.
+    Computes all releveant data to a station given its name and gives its wind
+    data
     
     Arguments
     ---------
@@ -156,20 +163,20 @@ def name_to_data(station_name, days, base_url = base_url):
         first: dict
             dir: str
                 The direction (most frequent).
-            time: datetime
-                The time it occured.
+            perc: float
+                percentage of occurrance.
         
         second: dict
             dir: str
                 The direction (second most frequent).
-            time: datetime
-                The time it occured.
+            perc: float
+                percentage of occurrance.
         
         last: dict
             dir: str
                 The direction (least prevailing).
-            time: datetime
-                The time it occured.
+            perc: float
+                percentage of occurrance.
                 
         station_name: str
             The station name.
@@ -188,6 +195,15 @@ def name_to_data(station_name, days, base_url = base_url):
                 The max windspeed on 1hr averages.
             time: datetime
                 The time it occured (timestamp at the beginning of the hour).
+    
+    data: dict
+        ff: list
+            wind speed
+        dd: list
+            wind direction
+        time: datatime
+            The time of occurrance
+                   
     """
     url = url_from_input(station_name, days, base_url)
     
@@ -203,10 +219,13 @@ def name_to_data(station_name, days, base_url = base_url):
     
     max_wind_speed, max_wind_1hr = max_wind(data['ff'], data['time'])
     
-    return {'first': sorted_directions[0], 'second': sorted_directions[1],
+    relevant_wind_data = {'first': sorted_directions[0], 'second': sorted_directions[1],
             'last': sorted_directions[-1], 'station_name': station_name,
             'days': days, 'max_wind': max_wind_speed,
-            'max_wind_1hr': max_wind_1hr}, data
+            'max_wind_1hr': max_wind_1hr}
+    
+    data = {'ff': data['ff'], 'dd': data['dd'], 'time': data['time']}
+    return relevant_wind_data, data
             
 def windrose_data(wind_direction, wind_speed, figure):
     ax = WindroseAxes.from_ax(fig = figure)
