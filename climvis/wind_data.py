@@ -211,6 +211,15 @@ def name_to_data(station_name, days, base_url = base_url):
     data = json.loads(req.decode('utf-8'))
     data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for ds in data['datumsec']]
     
+    #check if minutes are represented well
+    check = []
+    possible_minutes = [0,10,20,30,40,50]
+    for i in range(0,len(data['time'])):
+        check.append(data['time'][i].minute)
+    indexes = check.index(check not in possible_minutes)
+    for i in indexes:
+        data['time'][i].minute = data['time'][i].minute * 10
+    
     directions_percentage = perc_dir_from_data(data)
     sorted_directions = [{'dir': d, 'perc': directions_percentage[d]} 
                          for d in sorted(directions_percentage, 
@@ -228,6 +237,25 @@ def name_to_data(station_name, days, base_url = base_url):
     return relevant_wind_data, data
             
 def windrose_data(wind_direction, wind_speed, figure):
+    """
+    Creates a windrose plot
+    
+    Arguments
+    ---------
+    wind_direction: list
+        wind direction time series
+        
+    wind_speed: list
+        wind speed time series
+        
+    figure: matplotlib.figure.Figure
+        figure on which windrose is plotted
+    
+    Returns
+    -------
+    message: str
+        The nicely formatted message.
+    """
     ax = WindroseAxes.from_ax(fig = figure)
     ax.bar(wind_direction, wind_speed, normed=True, opening=1, edgecolor='white',
            nsector = 8)
