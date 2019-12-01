@@ -211,14 +211,20 @@ def name_to_data(station_name, days, base_url = base_url):
     data = json.loads(req.decode('utf-8'))
     data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for ds in data['datumsec']]
     
-    #check if minutes are represented well
+    #check if minutes are represented in tens: for example sometimes I noticed
+    #that the last 10 was replaced by 1. Eventhough the website seems to solve
+    #the conversion later in time, for that instant I needed in anycase to
+    #correct it
     check = []
     possible_minutes = [0,10,20,30,40,50]
     for i in range(0,len(data['time'])):
         check.append(data['time'][i].minute)
-    indexes = check.index(check not in possible_minutes)
-    for i in indexes:
-        data['time'][i].minute = data['time'][i].minute * 10
+    check = np.array(check)
+    bool = np.isin(check, possible_minutes)
+    if False in bool:
+        indexes = list(np.where(bool == False))[0].tolist()
+        for i in indexes:
+            data['time'][i].minute = data['time'][i].minute * 10
     
     directions_percentage = perc_dir_from_data(data)
     sorted_directions = [{'dir': d, 'perc': directions_percentage[d]} 
@@ -306,10 +312,12 @@ def direction_message(prevailing_directions_and_speed_dict):
 #    
 #    parser = argparse.ArgumentParser('Returns weather info about stations ' \
 #                                     'in and around Innsbruck.')
+#    parser.add_argument('-v', '--version', action='version', version='cruvis: ' + climvis.__version__)
+#    
 #    parser.add_argument('days', nargs='?', default='1', 
 #                        choices=possible_days, const='1',
 #                        help='Specify the number of days.')
-#    parser.add_argument('-s', '--station', default='innsbruck',
+#    parser.add_argument('station', nargs='?', default='innsbruck',
 #                        choices=possible_stations, help='Specify the station.')
 #    args = parser.parse_args()
 #        
