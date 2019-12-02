@@ -205,7 +205,7 @@ setup(
     entry_points={  # Optional
         'console_scripts': [
             'cruvis=climvis.cli:cruvis',
-            # inserire per windrose
+            'windvis=climvis.cli:windvis'
         ],
     },
 

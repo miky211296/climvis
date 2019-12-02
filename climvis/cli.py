@@ -74,7 +74,7 @@ def cruvis_location(lon, lat, nobrowser):
     else:
         webbrowser.get().open_new_tab(html_path)
         
-def cruvis_windrose(station, days, nobrowser):
+def windvis_windrose(station, days, nobrowser):
     html_path_windrose = climvis.write_html_wind_rose(station, days)
     if nobrowser:
         print('File successfully generated at: ' + html_path_windrose)
@@ -85,18 +85,16 @@ def cruvis():
     """Entry point for the cruvis application script"""
 
     parser = argparse.ArgumentParser(prog = 'cruvis',
-                                     description = 'CRU data visualization at a selected location.')
+                                     description = "CRU data visualization at" \
+                                     "a selected location.",
+                                     epilog = "also possible to call windvis " \
+                                     "for windrose data visualization")
 
     parser.add_argument('-v','--version', action='store_const', const=True,
                         default=False, help='print the installed version')
     parser.add_argument('-l', '--loc', nargs=2, metavar=('LON', 'LAT'), type=int,
                         help='the location at which the climate data must be extracted')
-    parser.add_argument('-w', '--windrose', nargs=2, metavar=('STATION', 'DAYS'),
-                        help="windrose at one of the possible stations" \
-                             "and for one of the possible days." \
-                             "possible_stations : ['innsbruck', " \
-                             "ellboegen', 'obergurgl', 'sattelberg']" \
-                             "possible_days :['1', '3', '7']")
+    
     parser.add_argument('--no-browser', action='store_const', const=True,
                         dest='nobrowser',
                         default=False, help='the default behavior is to open ' \
@@ -114,6 +112,40 @@ def cruvis():
         lon, lat = arguments.loc
         cruvis_location(lon, lat, arguments.nobrowser)
         
-    if arguments.windrose is not None:
-        station, days = arguments.windrose
-        cruvis_windrose(station, days, arguments.nobrowser)
+        
+def windvis():
+    """Entry point for the windvis application script"""
+    possible_stations = ['innsbruck', 'ellboegen', 'obergurgl', 'sattelberg']
+    possible_days = ['1', '3', '7']
+    windparser = argparse.ArgumentParser(prog = 'windvis',
+                                     description = "wind data visualization at" \
+                                     "a selected station for a selected number" \
+                                     "of days.",
+                                     epilog = "also possible to call cruvis " \
+                                     "for CRU data visualization")
+    windparser.add_argument('-v','--version', action='store_const', const=True,
+                        default=False, help='print the installed version')
+#    parser.add_argument('-w', '--windrose', nargs=2, metavar=('STATION', 'DAYS'),
+#                        help="windrose at one of the possible stations" \
+#                             "and for one of the possible days." \
+#                             "possible_stations : ['innsbruck', " \
+#                             "ellboegen', 'obergurgl', 'sattelberg']" \
+#                             "possible_days :['1', '3', '7']")
+    windparser.add_argument('-s', '--station', default='innsbruck',
+                        choices=possible_stations, help='Specify the station.')
+    windparser.add_argument('-d', '--days', default='innsbruck',
+                        choices=possible_days, help='Specify the days.')
+    windparser.add_argument('--no-browser', action='store_const', const=True,
+                        dest='nobrowser',
+                        default=False, help='the default behavior is to open ' \
+                                            'a browser with the newly ' \
+                                            'generated visualisation. Set to ' \
+                                            'ignore and print the path to ' \
+                                            'the html file instead')
+    arguments = windparser.parse_args()
+    if arguments.version:
+        print_version()
+        
+    if arguments.station and arguments.days is not None:
+        station, days = arguments.station, arguments.days
+        windvis_windrose(station, days, arguments.nobrowser)
