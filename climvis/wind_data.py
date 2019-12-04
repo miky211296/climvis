@@ -111,10 +111,45 @@ def max_wind(ff, time):
     """
     max_wind_speed = {'speed': max(ff), 'time': time[ff.index(max(ff))]}
     
+    check = []
+    for i in range(0,len(time)):
+            check.append(time[i].minute)
+    possible_minutes = [0, 10, 20, 30, 40, 50]
+    position = possible_minutes.index(check[0])
+    
+    
+    sequence = []
+    
+    for i in range(position, position + 6):
+         min = possible_minutes[i%6]
+         sequence.append(min)
+    
+    position = 0
+    check = np.array(check, dtype = float)
+    sequence = np.array(sequence, dtype = float)
+    
     ff = np.array(ff)
     time_array = np.array(time)
+    
+    i= 0
+    while True:
+         
+        if not check[i] == sequence[position]:
+            check = np.insert(check, i, np.nan)
+            time_array = np.insert(time_array, i, np.nan)
+            ff = np.insert(ff, i, np.nan)
+        if position < 5:
+            position += 1
+        else:
+            position = 0
+        i += 1
+        try:
+            x = check[i]
+        except:
+            break
+    
     meas_per_hr = 6
-    #it may happen some wind data are not taken by the system
+    #it may happen some wind data are in excess and don't complete a hour
     less_than_one_hour = np.arange(1,6)
     #how many data don't complete a hour ?
     remainder = len(ff)%meas_per_hr 
@@ -127,10 +162,13 @@ def max_wind(ff, time):
         ff = ff[:-remainder]
         time_array = time_array[:-remainder]
     ff = ff.reshape(int(len(ff)/meas_per_hr), meas_per_hr)
-    ff = ff.mean(axis = 1)
+    nan_counter = np.isnan(ff).sum(1)
+    ff = np.nanmean(ff[np.where(nan_counter < 2)], axis = 1)
+    
     time_array = time_array.reshape(int(len(time_array)/meas_per_hr), 
                               meas_per_hr)
-    time_array = time_array.max(axis = 1)
+    time_array = np.nanmax(time_array[np.where(nan_counter == 0)], axis = 1)
+    #time_array = time_array.max(axis = 1)
     #If I miss only 1 or 2 data to complete the hour, I consider them anyway
     if remainder in less_than_one_hour[-2:]:
         partial_data = partial_data.mean()
@@ -224,7 +262,8 @@ def name_to_data(station_name, days, base_url = base_url):
     if False in bool:
         indexes = list(np.where(bool == False))[0].tolist()
         for i in indexes:
-            data['time'][i].minute = data['time'][i].minute * 10
+            right_min = data['time'][i].minute * 10
+            data['time'][i] = data['time'][i].replace(minute = right_min) 
     
     directions_percentage = perc_dir_from_data(data)
     sorted_directions = [{'dir': d, 'perc': directions_percentage[d]} 
