@@ -7,6 +7,8 @@ Created on Wed Oct 30 11:34:34 2019
 """
 
 from urllib.request import Request, urlopen
+from urllib.error import URLError
+import sys
 import json
 import numpy as np
 from windrose import WindroseAxes
@@ -17,7 +19,10 @@ from windrose import WindroseAxes
 base_url = 'http://meteo145.uibk.ac.at'
 url = 'http://meteo145.uibk.ac.at/innsbruck/3'
 # Parse the given url
-req = urlopen(Request(url)).read()
+try:
+    req = urlopen(Request(url)).read()
+except URLError:
+    sys.exit('cannot reach the website. Check the connection.') 
 # Read the data
 data = json.loads(req.decode('utf-8'))
 
@@ -192,8 +197,8 @@ def max_wind(ff, time):
 
 def name_to_data(station_name, days, base_url = base_url):
     """
-    Computes all releveant data to a station given its name and gives its wind
-    data
+    Computes all releveant wind data in a station given the name and the
+    number of days
     
     Arguments
     ---------
@@ -254,9 +259,12 @@ def name_to_data(station_name, days, base_url = base_url):
             The time of occurrance
                    
     """
-    url = url_from_input(station_name, days, base_url)
+    url = url_from_input(station_name, days, base_url)        
+    try:
+        req = urlopen(Request(url)).read()
+    except URLError:
+        sys.exit('cannot reach the website. Check the connection.')
     
-    req = urlopen(Request(url)).read()
     data = json.loads(req.decode('utf-8'))
     data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for ds in data['datumsec']]
     
@@ -269,10 +277,13 @@ def name_to_data(station_name, days, base_url = base_url):
     #implemented the code for a general station
     check = []
     possible_minutes = [0,10,20,30,40,50]
+    
     for i in range(0,len(data['time'])):
         check.append(data['time'][i].minute)
+        
     check = np.array(check)
     bool = np.isin(check, possible_minutes)
+    
     if False in bool:
         indexes = list(np.where(bool == False))[0].tolist()
         for i in indexes:
@@ -296,6 +307,7 @@ def name_to_data(station_name, days, base_url = base_url):
             'max_wind_1hr': max_wind_1hr}
     
     data = {'ff': data['ff'], 'dd': data['dd'], 'time': data['time']}
+    
     return relevant_wind_data, data
             
 def windrose_data(wind_direction, wind_speed, figure):
@@ -318,6 +330,8 @@ def windrose_data(wind_direction, wind_speed, figure):
     message: str
         The nicely formatted message.
     """
+    #hard-coded: inserting fig as optional parameter the ax output refers to
+    #fig itself. It seems to be unused, but it is not true
     ax = WindroseAxes.from_ax(fig = figure)
     ax.bar(wind_direction, wind_speed, normed=True, opening=1, edgecolor='white',
            nsector = 8)
@@ -345,7 +359,7 @@ def direction_message(prevailing_directions_and_speed_dict):
               'the least dominant wind direction was {} ({:.2f}% of ' \
               'the time). The maximum wind speed was {:.2f} m/s ' \
               '({} UTC), while the strongest wind speed averaged ' \
-              'over an hour was {:.1f} m/s ' \
+              'over an hour was {:.2f} m/s ' \
               '({} UTC).'.format(data_dict['station_name'], 
                                         data_dict['days'],
                                         data_dict['first']['dir'],

@@ -141,7 +141,7 @@ def windvis():
                                             'a browser with the newly ' \
                                             'generated visualisation. Set to ' \
                                             'ignore and print the path to ' \
-                                            'the html file instead')
+                                            'the html file instead.')
     arguments = windparser.parse_args()
     if arguments.version:
         print_version()

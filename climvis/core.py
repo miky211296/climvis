@@ -181,6 +181,7 @@ def write_html_wind_rose(station, days, directory=None):
     png = os.path.join(directory, 'windrose.png')
     directions_and_speed, data_wind = wind_data.name_to_data(station, days)
     message = wind_data.direction_message(directions_and_speed)
+    
     #creates windrose.png with the plot
     graphics.plot_windrose(data_wind['dd'], data_wind['ff'], filepath=png)
     
