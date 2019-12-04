@@ -111,13 +111,20 @@ def max_wind(ff, time):
     """
     max_wind_speed = {'speed': max(ff), 'time': time[ff.index(max(ff))]}
     
+    #It could happen that some data are missing in a hour. In order to handle
+    #with this issue, I introduce nan values in the variables time and ff:
+    #in time because I want to display the right associated datetime to the
+    #max 1hour windspeed; in ff because I don't want to average windspeed
+    #for those hours in which nan occur.
+    
+    #Get the initial datetime minute
     check = []
     for i in range(0,len(time)):
             check.append(time[i].minute)
     possible_minutes = [0, 10, 20, 30, 40, 50]
     position = possible_minutes.index(check[0])
     
-    
+    #get the sequence that has to repeat from the initial datetime minute
     sequence = []
     
     for i in range(position, position + 6):
@@ -125,12 +132,16 @@ def max_wind(ff, time):
          sequence.append(min)
     
     position = 0
+    #convert to float to insert nan values
     check = np.array(check, dtype = float)
     sequence = np.array(sequence, dtype = float)
     
     ff = np.array(ff)
     time_array = np.array(time)
     
+    #check if every minute corresponds to the minute in the sequence
+    #if not (so there is a jump of ten minutes in check) a nan is inserted
+    #the loop ends when it arrives to the last element of array
     i= 0
     while True:
          
@@ -250,9 +261,12 @@ def name_to_data(station_name, days, base_url = base_url):
     data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for ds in data['datumsec']]
     
     #check if minutes are represented in tens: for example sometimes I noticed
-    #that the last 10 was replaced by 1. Eventhough the website seems to solve
-    #the conversion later in time, for that instant I needed in anycase to
-    #correct it
+    #that the last 10 was replaced by 1 and I noticed also the presence of a 54
+    #after 50. Eventhough the website seems to solve the conversion later 
+    #in time, for that instant I needed in anycase to correct it. 
+    #This problem was noticed with the ellboegen station, but I am
+    #not totally sure if it didn't occur also for the other stations. So I 
+    #implemented the code for a general station
     check = []
     possible_minutes = [0,10,20,30,40,50]
     for i in range(0,len(data['time'])):
@@ -263,7 +277,10 @@ def name_to_data(station_name, days, base_url = base_url):
         indexes = list(np.where(bool == False))[0].tolist()
         for i in indexes:
             right_min = data['time'][i].minute * 10
-            data['time'][i] = data['time'][i].replace(minute = right_min) 
+            if right_min < 60: #sometimes
+                data['time'][i] = data['time'][i].replace(minute = right_min)
+            else:
+                del data['time'][i]
     
     directions_percentage = perc_dir_from_data(data)
     sorted_directions = [{'dir': d, 'perc': directions_percentage[d]} 
@@ -326,7 +343,7 @@ def direction_message(prevailing_directions_and_speed_dict):
               'wind direction was {} ({:.1f}% of the time). The second most ' \
               'dominant wind direction was {} ({:.1f}% of the time), ' \
               'the least dominant wind direction was {} ({:.2f}% of ' \
-              'the time). The maximum wind speed was {} m/s ' \
+              'the time). The maximum wind speed was {:.2f} m/s ' \
               '({} UTC), while the strongest wind speed averaged ' \
               'over an hour was {:.1f} m/s ' \
               '({} UTC).'.format(data_dict['station_name'], 
