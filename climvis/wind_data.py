@@ -91,7 +91,7 @@ def perc_dir_from_data(data):
         wind_dir_percent[wind_dir] = wind_dir_count[wind_dir] / total_counts * 100
 
     return wind_dir_percent      
-    
+    #test: crea un dataset con station e days casuali e usa ~np.isnan
 def max_wind(ff, time):
     """
     Computes the max wind speed and the max wind speed on 1hr averages.
@@ -195,6 +195,9 @@ def max_wind(ff, time):
     
     return max_wind_speed, max_wind_1hr
 
+    #test: prendi unn dataset casuale e togli dei datatime. Controlla che i nan
+    #vengono aggiunti nei posti giusti
+
 def name_to_data(station_name, days, base_url = base_url):
     """
     Computes all releveant wind data in a station given the name and the
@@ -292,7 +295,8 @@ def name_to_data(station_name, days, base_url = base_url):
                 data['time'][i] = data['time'][i].replace(minute = right_min)
             else:
                 del data['time'][i]
-    
+    #test: verifica che con un random dataset alla fine di questo ciclo
+    #i datetime seguano la sequenza giusta
     directions_percentage = perc_dir_from_data(data)
     sorted_directions = [{'dir': d, 'perc': directions_percentage[d]} 
                          for d in sorted(directions_percentage, 
@@ -335,9 +339,9 @@ def windrose_data(wind_direction, wind_speed, figure):
     ax = WindroseAxes.from_ax(fig = figure)
     ax.bar(wind_direction, wind_speed, normed=True, opening=1, edgecolor='white',
            nsector = 8)
-    ax.set_legend()
+    ax.set_legend(loc = "best", prop={'size': 5})
     return ax
-    
+    #check if the type of ax is windrose.windrose.WindroseAxes
 def direction_message(prevailing_directions_and_speed_dict):
     """
     Creates a nicely formatted message with all the data.

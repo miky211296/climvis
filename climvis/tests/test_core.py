@@ -7,6 +7,7 @@ import pandas as pd
 from climvis import core, cfg
 
 
+
 def test_get_ts():
 
     df_cities = pd.read_csv(cfg.world_cities)
@@ -67,3 +68,14 @@ def test_write_html(tmpdir):
     dir = str(tmpdir.join('html_dir'))
     core.write_html(dfi.Lon, dfi.Lat, directory=dir)
     assert os.path.isdir(dir)
+    
+def test_write_html_windrose(tmpdir):
+    
+    station, days = 'ellboegen', '3'
+
+    dir = str(tmpdir.join('html_windrose_dir'))
+    core.write_html_wind_rose(station, days, directory=dir)
+    #check if it exists the directory in which index_windrose.html is created
+    assert os.path.isdir(dir)
+    
+

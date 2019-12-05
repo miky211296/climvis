@@ -177,12 +177,12 @@ def write_html_wind_rose(station, days, directory=None):
 
     mkdir(directory)
 
-    # Make the plot
+    # creates windrose.png
     png = os.path.join(directory, 'windrose.png')
     directions_and_speed, data_wind = wind_data.name_to_data(station, days)
     message = wind_data.direction_message(directions_and_speed)
     
-    #creates windrose.png with the plot
+    #creates the plot and saves it in windrose.png
     graphics.plot_windrose(data_wind['dd'], data_wind['ff'], filepath=png)
     
     outpath = os.path.join(directory, 'index_windrose.html')

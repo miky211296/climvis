@@ -103,7 +103,13 @@ def cruvis():
                                             'ignore and print the path to ' \
                                             'the html file instead')
     
+    #arguments = parser.parse_args()
+    
     arguments = parser.parse_args()
+    
+    if len(sys.argv) < 2:
+       parser.print_help()
+       sys.exit(0)
     
     if arguments.version:
         print_version()
@@ -142,7 +148,12 @@ def windvis():
                                             'generated visualisation. Set to ' \
                                             'ignore and print the path to ' \
                                             'the html file instead.')
+    #arguments = windparser.parse_args()
     arguments = windparser.parse_args()
+    if len(sys.argv) < 2:
+       windparser.print_help()
+       sys.exit(0)
+        
     if arguments.version:
         print_version()
         
