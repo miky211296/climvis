@@ -48,6 +48,8 @@ def plot_windrose(wind_direction, wind_speed, filepath = None):
     html file
     """
     fig = plt.figure(figsize=(3,3))
+    #hard-coded: inserting fig as optional parameter, the ax output refers to
+    #fig itself.
     ax = wind_data.windrose_data(wind_direction,wind_speed, fig)
     
     if filepath is not None:
