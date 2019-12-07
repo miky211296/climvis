@@ -11,28 +11,30 @@ from urllib.error import URLError
 import sys
 import json
 import numpy as np
-from windrose import WindroseAxes
+import warnings
+with  warnings.catch_warnings():
+    warnings.filterwarnings("ignore")
+    from windrose import WindroseAxes
+
 #from matplotlib import pyplot as plt
 #import matplotlib.cm as cm
 #import argparse
 
 base_url = 'http://meteo145.uibk.ac.at'
 url = 'http://meteo145.uibk.ac.at/innsbruck/3'
+
 # Parse the given url
 try:
     req = urlopen(Request(url)).read()
 except URLError:
     sys.exit('cannot reach the website. Check the connection.') 
+
 # Read the data
 data = json.loads(req.decode('utf-8'))
 
 from datetime import datetime, timedelta
-data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for ds in data['datumsec']]
-
-#import matplotlib.pyplot as plt
-#plt.plot(data['time'], data['dd'], '.');
-#plt.ylabel('Wind direction (°)'); 
-#plt.title('Wind direction at Innsbruck');
+data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for
+                ds in data['datumsec']]
 
 def url_from_input(station_name, days, base_url):
     """
@@ -73,12 +75,12 @@ def perc_dir_from_data(data):
     """
     n_sectors = 8
     sector = 360/n_sectors
-#    midpoints = [i*sector for i in range(0, n_sectors)]
     
     sector_names = ['N', 'NE', 'E', 'SE', 'S', 'SW','W', 'NW']
     
     wind_dir_count = {name: 0 for name in sector_names}
-        
+    
+    #count how many wind data directions fall in a certain sector    
     for wind_dir in data['dd']:
         sec = int(((wind_dir + int(sector/2)) % 360) / sector)
         wind_dir_count[sector_names[sec]] += 1
@@ -90,8 +92,8 @@ def perc_dir_from_data(data):
     for wind_dir in wind_dir_count:
         wind_dir_percent[wind_dir] = wind_dir_count[wind_dir] / total_counts * 100
 
-    return wind_dir_percent      
-    #test: crea un dataset con station e days casuali e usa ~np.isnan
+    return wind_dir_percent
+
 def max_wind(ff, time):
     """
     Computes the max wind speed and the max wind speed on 1hr averages.
@@ -120,7 +122,7 @@ def max_wind(ff, time):
     #with this issue, I introduce nan values in the variables time and ff:
     #in time because I want to display the right associated datetime to the
     #max 1hour windspeed; in ff because I don't want to average windspeed
-    #for those hours in which nan occur.
+    #for those hours in which nans occur.
     
     #Get the initial datetime minute
     check = []
@@ -145,7 +147,8 @@ def max_wind(ff, time):
     time_array = np.array(time)
     
     #check if every minute corresponds to the minute in the sequence
-    #if not (so there is a jump of ten minutes in check) a nan is inserted
+    #if not (so there is a jump of ten minutes in check) a nan is 
+    # inserted
     #the loop ends when it arrives to the last element of array
     i= 0
     while True:
@@ -174,17 +177,18 @@ def max_wind(ff, time):
         #save the extra-data
         partial_data = ff[-remainder:]
         partial_time = time_array[-remainder:]
-        #Remove those extra-data
+        #Remove those extra-data from ff and time_array
         ff = ff[:-remainder]
         time_array = time_array[:-remainder]
+        
     ff = ff.reshape(int(len(ff)/meas_per_hr), meas_per_hr)
     nan_counter = np.isnan(ff).sum(1)
-    ff = np.nanmean(ff[np.where(nan_counter < 2)], axis = 1)
+    ff = np.nanmean(ff[np.where(nan_counter == 0)], axis = 1)
     
     time_array = time_array.reshape(int(len(time_array)/meas_per_hr), 
                               meas_per_hr)
     time_array = np.nanmax(time_array[np.where(nan_counter == 0)], axis = 1)
-    #time_array = time_array.max(axis = 1)
+    
     #If I miss only 1 or 2 data to complete the hour, I consider them anyway
     if remainder in less_than_one_hour[-2:]:
         partial_data = partial_data.mean()
@@ -194,9 +198,6 @@ def max_wind(ff, time):
     max_wind_1hr = {'speed': max(ff), 'time': time_array[ff.argmax()]}    
     
     return max_wind_speed, max_wind_1hr
-
-    #test: prendi unn dataset casuale e togli dei datatime. Controlla che i nan
-    #vengono aggiunti nei posti giusti
 
 def name_to_data(station_name, days, base_url = base_url):
     """
@@ -291,12 +292,11 @@ def name_to_data(station_name, days, base_url = base_url):
         indexes = list(np.where(bool == False))[0].tolist()
         for i in indexes:
             right_min = data['time'][i].minute * 10
-            if right_min < 60: #sometimes
+            if right_min < 60:
                 data['time'][i] = data['time'][i].replace(minute = right_min)
             else:
                 del data['time'][i]
-    #test: verifica che con un random dataset alla fine di questo ciclo
-    #i datetime seguano la sequenza giusta
+                
     directions_percentage = perc_dir_from_data(data)
     sorted_directions = [{'dir': d, 'perc': directions_percentage[d]} 
                          for d in sorted(directions_percentage, 
@@ -334,14 +334,12 @@ def windrose_data(wind_direction, wind_speed, figure):
     message: str
         The nicely formatted message.
     """
-    #hard-coded: inserting fig as optional parameter the ax output refers to
-    #fig itself. It seems to be unused, but it is not true
     ax = WindroseAxes.from_ax(fig = figure)
     ax.bar(wind_direction, wind_speed, normed=True, opening=1, edgecolor='white',
            nsector = 8)
     ax.set_legend(loc = "best", prop={'size': 5})
     return ax
-    #check if the type of ax is windrose.windrose.WindroseAxes
+    
 def direction_message(prevailing_directions_and_speed_dict):
     """
     Creates a nicely formatted message with all the data.
@@ -378,22 +376,3 @@ def direction_message(prevailing_directions_and_speed_dict):
                                         data_dict['max_wind_1hr']['time'])
               
     return message
-    
-#if __name__ == '__main__':
-#    
-#    possible_stations = ['innsbruck', 'ellboegen', 'obergurgl', 'sattelberg']
-#    possible_days = ['1', '3', '7']
-#    
-#    parser = argparse.ArgumentParser('Returns weather info about stations ' \
-#                                     'in and around Innsbruck.')
-#    parser.add_argument('-v', '--version', action='version', version='cruvis: ' + climvis.__version__)
-#    
-#    parser.add_argument('days', nargs='?', default='1', 
-#                        choices=possible_days, const='1',
-#                        help='Specify the number of days.')
-#    parser.add_argument('station', nargs='?', default='innsbruck',
-#                        choices=possible_stations, help='Specify the station.')
-#    args = parser.parse_args()
-#        
-#    directions_and_speed = name_to_data(args.station, args.days)
-#    print(direction_message(directions_and_speed))
