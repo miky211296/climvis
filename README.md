@@ -17,7 +17,6 @@ Make sure you have all dependencies installed. These are:
 - motionless
 - matplotlib
 - windrose
-- pyviz
 - holoviews
 - bokeh
 - tornado
