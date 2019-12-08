@@ -22,7 +22,7 @@ Make sure you have all dependencies installed. These are:
 - bokeh
 - tornado
 
-**If you installed the scipy packages separately then you might need to install ``scipy`` since this package makes use of the ``scipy.stats`` **module.**
+**If you installed the scipy packages separately then you might need to install** ``scipy`` **since this package makes use of the** ``scipy.stats`` **module.**
 
 Download the package and install it in development mode. From the root
 directory, do:
