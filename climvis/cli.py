@@ -1,76 +1,50 @@
 import webbrowser
 import sys
 import climvis
+import climvis.interactive_graphics as ig
 import argparse
-
-#aggiungere nell HELP windrose: windrose visualization for selected station
-# and number of days
-HELP = """cruvis: CRU data visualization at a selected location.
-
-Usage:
-   -h, --help            : print the help
-   -v, --version         : print the installed version
-   -l, --loc [LON] [LAT] : the location at which the climate data must be
-                           extracted
-   -w, --windrose [STATION] [DAYS]: windrose at one of the possible stations 
-                                    and for one of the possible days.       
-                                    possible_stations : ['innsbruck',
-                                    'ellboegen', 'obergurgl', 'sattelberg']
-                                    possible_days :['1', '3', '7']                        
-   --no-browser          : the default behavior is to open a browser with the
-                           newly generated visualisation. Set to ignore
-                           and print the path to the html file instead
-   Required packages: motionless, windrose                        
-"""
-
-
-def cruvis_io(args):
-    """The actual command line tool.
-
-    Parameters
-    ----------
-    args: list
-        output of sys.args[1:]
-    """
-
-    if len(args) == 0:
-        print(HELP)
-    elif args[0] in ['-h', '--help']:
-        print(HELP)
-    elif args[0] in ['-v', '--version']:
-        print('cruvis: ' + climvis.__version__)
-        print('License: public domain')
-        print('cruvis is provided "as is", without warranty of any kind')
-        #TODO: GESTIONE ARGOMENTI DA IMPLEMENTARE: per ora ho messo abbastanza
-        #a caso per vedere che funzionasse
-    elif args[0] in ['-l', '--loc'] and args[3] in ['-w', '--windrose']:
-        if len(args) < 3:
-            print('cruvis --loc needs lon and lat parameters!')
-            return
-        lon, lat = float(args[1]), float(args[2])
-        html_path = climvis.write_html(lon, lat)
-        station, days = args[4], args[5] 
-        html_path_windrose = climvis.write_html_wind_rose(station, days)
-        if '--no-browser' in args:
-            print('File successfully generated at: ' + html_path)
-        else:
-            webbrowser.get().open_new_tab(html_path)
-            #open browser page for windrose
-            webbrowser.get().open_new_tab(html_path_windrose)
-    else:
-        print('cruvis: command not understood. '
-              'Type "cruvis --help" for usage options.')
 
 
 def print_version():
     print('cruvis: ' + climvis.__version__)
     print('License: public domain')
     print('cruvis is provided "as is", without warranty of any kind')
+
+
+def handle_interactive(lon, lat):
+    while True:
+        choice = input('Do you want to overlay or have adjacent plots?\n'
+                       'Warning: if overlay is selected the lateral axis '
+                       'is in common. [O/a] (q for exiting) ')
+        if choice in ('O','o','overlay','Overlay',''):
+            hv_climvis_plot = ig.ClimvisHVPlot(lon, lat, overlay=True)
+            break
+        elif choice in ('A','a','Adjacent','adjacent'):
+            hv_climvis_plot = ig.ClimvisHVPlot(lon, lat, overlay=False)
+            break
+        elif choice in ('Q','q'):
+            sys.exit()
+
+    while True:
+        choice = input('Do you want to proceed with the plotting?\n'
+                       'Warning: a new webpage will be opened. Retrieving data'
+                       ' might take a while so please be patient.\n'
+                       'Warning: a blank plot might mean you are over '
+                       'the ocean.\n\n'
+                       'Proceed? [Y/n] ')
+        if choice in ('Y','y','Yes','yes',''):
+            print('For exiting use KeyboardInterrupt\n')
+            hv_climvis_plot.server_show()
+            sys.exit()
+        elif choice in ('N','n','No','no','Q','q','Quit','quit'):
+            sys.exit()
     
-def cruvis_location(lon, lat, nobrowser):
+def cruvis_location(lon, lat, nobrowser, interactive):
     html_path = climvis.write_html(lon, lat)
     if nobrowser:
         print('File successfully generated at: ' + html_path)
+    elif interactive:
+        handle_interactive(lon, lat)
     else:
         webbrowser.get().open_new_tab(html_path)
         
@@ -83,7 +57,7 @@ def windvis_windrose(station, days, nobrowser):
     
 def cruvis():
     """Entry point for the cruvis application script"""
-
+    # Implemented by Stefano
     parser = argparse.ArgumentParser(prog = 'cruvis',
                                      description = "CRU data visualization at" \
                                      "a selected location.",
@@ -95,16 +69,25 @@ def cruvis():
     parser.add_argument('-l', '--loc', nargs=2, metavar=('LON', 'LAT'), type=int,
                         help='the location at which the climate data must be extracted')
     
-    parser.add_argument('--no-browser', action='store_const', const=True,
-                        dest='nobrowser',
-                        default=False, help='the default behavior is to open ' \
-                                            'a browser with the newly ' \
-                                            'generated visualisation. Set to ' \
-                                            'ignore and print the path to ' \
-                                            'the html file instead')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--no-browser', action='store_const', const=True,
+                       dest='nobrowser',
+                       default=False, help='the default behavior is to open ' \
+                                           'a browser with the newly ' \
+                                           'generated visualisation. Set to ' \
+                                           'ignore and print the path to ' \
+                                           'the html file instead')
     
-    #arguments = parser.parse_args()
-    
+    group.add_argument('-i',
+                       '--interactive',
+                       action='store_const',
+                       dest='interactive',
+                       const=True,
+                       default=False,
+                       help='Plot an interactive plot only of temperature'
+                            ' and precipitation at the given location.\n'
+                            'Warning: it might be slow.')
+
     arguments = parser.parse_args()
     
     if len(sys.argv) < 2:
@@ -116,11 +99,12 @@ def cruvis():
     
     if arguments.loc is not None:
         lon, lat = arguments.loc
-        cruvis_location(lon, lat, arguments.nobrowser)
+        cruvis_location(lon, lat, arguments.nobrowser, arguments.interactive)
         
         
 def windvis():
     """Entry point for the windvis application script"""
+    # Implemented by Michele
     possible_stations = ['innsbruck', 'ellboegen', 'obergurgl', 'sattelberg']
     possible_days = ['1', '3', '7']
     windparser = argparse.ArgumentParser(prog = 'windvis',
