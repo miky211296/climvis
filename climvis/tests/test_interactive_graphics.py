@@ -1,17 +1,16 @@
-"""A module for plotting interactive graphics using holoviews and bokeh.
-
-This module helps you produce an interactive plot of temperature and
-precipitation data for a given pair of coordinates. Not all places have
-available data.
+"""Testing the interactive_graphics module.
 
 @author: stefano
 """
 from climvis import core
+import climvis.interactive_graphics as ig
+import pandas as pd
 import holoviews as hv
 import holoviews.plotting.bokeh
 from bokeh.plotting import show
 from bokeh.server.server import Server
 from tornado.ioloop import IOLoop
+import pytest
 
 # Initializing a holoviews renderer. It will be used in the class.
 renderer = hv.renderer('bokeh')
@@ -20,116 +19,48 @@ renderer = hv.renderer('bokeh')
 bounds = {'lon': (-180, 180), 'lat': (-90, 90)}
 
 
-def out_of_bounds(lon, lat, method_or_function_name):
-    """Checks if longitude and latitude are within the right interval.
+def test_out_of_bounds():
+    with pytest.raises(ValueError,
+                       match="Longitude and Latitude in out_of_bounds are "
+                             "out of bounds."):
+        ig.out_of_bounds(250, 250, 'out_of_bounds')
 
-    This function will check if longitude and latitude were supplied correctly
-    otherwise it raises informative errors.
+    with pytest.raises(ValueError,
+                       match="Longitude in out_of_bounds is out of bounds."):
+        ig.out_of_bounds(250, 0, 'out_of_bounds')
 
-    Parameters
-    ----------
-    lon : int or float
-        The longitude of the point.
-
-    lat : int or float
-        The latitude of the point.
-
-    method_or_function_name : str
-        The name of the method or function within whick this function is being
-        called. Hellps give informative messages.
-
-    Raises
-    ------
-    ValueError
-        If either longitude or latitude or both are out of bounds.
-
-    """
-    out_of_bounds_vars = {'lon': not (bounds['lon'][0] <=
-                                      lon <=
-                                      bounds['lon'][1]),
-                          'lat': not (bounds['lat'][0] <=
-                                      lat <=
-                                      bounds['lat'][1])}
-
-    if tuple(out_of_bounds_vars.values()) == (True, True):
-        error_message = 'Longitude and Latitude in {} are out of bounds.'
-    elif tuple(out_of_bounds_vars.values()) == (True, False):
-        error_message = 'Longitude in {} is out of bounds.'
-    elif tuple(out_of_bounds_vars.values()) == (False, True):
-        error_message = 'Latitude in {} is out of bounds.'
-    else:
-        error_message = None
-
-    if error_message is not None:
-        raise ValueError(error_message.format(method_or_function_name))
+    with pytest.raises(ValueError,
+                       match="Latitude in out_of_bounds is out of bounds."):
+        ig.out_of_bounds(0, 250, 'out_of_bounds')
 
 
-def annual_cycle_for_hv(lon, lat, variable='tmp'):
-    """Obtaining the annual cycle in a holoviews DynamicMap suitable format.
+def test_annual_cycle_for_hv():
+    assert (type(ig.annual_cycle_for_hv(0, 0, variable='tmp')) ==
+            pd.core.series.Series)
 
-    Using the ``get_cru_timeseries`` function of the ``core`` module to get a
-    pandas dataframe. The use is for temperature or precipitation.
+    assert (type(ig.annual_cycle_for_hv(0, 0, variable='pre')) ==
+            pd.core.series.Series)
 
-    Parameters
-    ----------
-    lon : int or float
-        The longitude of the point.
+    with pytest.raises(KeyError):
+        ig.annual_cycle_for_hv(0, 0, 'foo')
 
-    lat : int or float
-        The latitude of the point.
-
-    variable : {'tmp','pre'}, optional
-        The variable for which the data is extracted. Either temperature or
-        precipitation.
-
-    Returns
-    -------
-    pandas Series
-        The monthly aggregated series on the whole dataset timespan. It
-        contains 12 entries.
-    """
-    # Check if supplied longitude and latitude are within bounds.
-    out_of_bounds(lon, lat, 'annual_cycle_for_hv')
-
-    # Get the timeseries as pandas dataframe and output just one column
-    # corresponding to the desired variable.
-    df = core.get_cru_timeseries(lon, lat)
-    df = df.groupby(df.index.month).mean()
-    return df[variable]
+    with pytest.raises(ValueError,
+                       match='Latitude in annual_cycle_for_hv '
+                             'is out of bounds.'):
+        ig.annual_cycle_for_hv(0, 250)
 
 
-def real_lon_lat(lon, lat):
-    """Obtaining the real coordinates of the point in the dataset.
+def test_real_lon_lat():
+    assert type(ig.real_lon_lat(0, 0)) == dict
 
-    Using the ``get_cru_timeseries`` function of the ``core`` module to get a
-    pandas dataframe. It outputs the actual coordinates to which the data refer
-    to.
+    assert tuple(ig.real_lon_lat(10, 45).values()) == (10.25, 45.25)
 
-    Parameters
-    ----------
-    lon : int or float
-        The longitude of the point.
-
-    lat : int or float
-        The latitude of the point.
-
-    Returns
-    -------
-    dict
-        Two entries. ``'lon'`` contains the longitude and ``'lat'`` contains
-        the latitude.
-    """
-    # Check if supplied longitude and latitude are within bounds.
-    out_of_bounds(lon, lat, 'real_lon_lat')
-
-    # Get the real longitude and latitude for which the data are being
-    # extracted.
-    df = core.get_cru_timeseries(lon, lat)
-    df = df.groupby(df.index.month).mean()
-    return {'lon': df['lon'][1], 'lat': df['lat'][1]}
+    with pytest.raises(ValueError,
+                       match='Latitude in real_lon_lat is out of bounds.'):
+        ig.real_lon_lat(0, 300)
 
 
-class ClimvisHVPlot:
+class TestClimvisHVPlot:
     """
     A class with holoviews for interactive precipitation and temperature plots.
 
@@ -164,14 +95,23 @@ class ClimvisHVPlot:
     out_of_bounds : Checks if longitude and latitude are out of bounds.
 
     """
-    def __init__(self, lon, lat, overlay=False):
-        # Check if supplied longitude and latitude are within bounds.
-        out_of_bounds(lon, lat, 'ClimvisHVPlot.__init__')
+    def test__init__(self):
 
-        # Initialize the hidden attributes.
-        self._lon = lon
-        self._lat = lat
-        self._overlay = overlay
+        with pytest.raises(ValueError,
+                           match="Latitude in ClimvisHVPlot.__init__ is out"
+                           "of bounds."):
+            climvis_hv_plot = ig.ClimvisHVPlot(0, 250)
+        
+        climvis_hv_plot = ig.ClimvisHVPlot(0, 0)
+        assert climvis_hv_plot._lon == 0
+        assert climvis_hv_plot._lat == 0
+        assert not climvis_hv_plot._overlay
+        
+        climvis_hv_plot = ig.ClimvisHVPlot(0, 0, overlay=True)
+        assert climvis_hv_plot._lon == 0
+        assert climvis_hv_plot._lat == 0
+        assert climvis_hv_plot._overlay
+
 
     def precipitation(self, lon, lat):
         """Creates an **holoviews.Bars** object for precipitation.
