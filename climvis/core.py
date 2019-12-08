@@ -129,15 +129,22 @@ def write_html(lon, lat, directory=None, zoom=None):
 
     mkdir(directory)
 
+# Modified by Raphael:
     # Make the plot
-    png = os.path.join(directory, 'annual_cycle.png')
+    png1 = os.path.join(directory, 'annual_cycle.png')
+    png2 = os.path.join(directory, 'temp_trend.png')
+    png3 = os.path.join(directory, 'prec_trend.png')
     df = get_cru_timeseries(lon, lat)
-    if df.isnull().values.any():
-        warning_message = 'Position {} {} probably is on the Ocean.'\
-                      'It contains NaN. Exit'.format(lon,lat)
-        warnings.warn(warning_message, Warning)
-        sys.exit()
-    graphics.plot_annual_cycle(df, filepath=png)
+    
+    # Checks if data is available.
+    if df['tmp'].isnull().values.all():
+        sys.exit('Location in ocean or no data available. ' +
+                 'Please type in a valid location.')
+    
+    graphics.plot_annual_cycle(df, filepath=png1)
+    graphics.plot_trend_temp(df, filepath=png2)
+    graphics.plot_trend_prec(df, filepath=png3)
+    
 
     outpath = os.path.join(directory, 'index.html')
     with open(cfg.html_tpl, 'r') as infile:
@@ -155,6 +162,8 @@ def write_html(lon, lat, directory=None, zoom=None):
 
 def write_html_wind_rose(station, days, directory=None):
     """writes html file for selected station and selected days.
+    
+    Author: Michele
 
     Parameters
     ----------
