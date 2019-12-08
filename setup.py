@@ -53,6 +53,9 @@ req_packages = ['numpy',
                 'xarray',
                 'matplotlib',
                 'netCDF4',
+		'windrose',
+		'holoviews',
+		'bokeh'
                 ]
 
 check_dependencies(req_packages)
@@ -171,8 +174,7 @@ setup(
                       'windrose',
                       'holoviews',
                       'bokeh',
-                      'tornado',
-                      'pyviz'],
+                      'tornado'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
