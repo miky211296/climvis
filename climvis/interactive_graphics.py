@@ -263,12 +263,13 @@ class ClimvisHVPlot:
         # Formatting xlables and ylabels
         if self._overlay:
             out = (pre * tmp).opts(xlabel='Month',
-                                   ylabel='Precipitation and Temperature')
+                                   ylabel='Precipitation and Temperature '
+                                          '(°C and mm mth^-1)')
         else:
             out = (pre.opts(xlabel='Month',
-                            ylabel='Precipitation') +
+                            ylabel='Precipitation (mm mth^-1)') +
                    tmp.opts(xlabel='Month',
-                            ylabel='Temperature'))
+                            ylabel='Temperature (°C)'))
 
         return out
 
@@ -367,7 +368,8 @@ class ClimvisHVPlot:
         server.start()
         server.show('/')
 
-        # Starting input-output loop to capture events asynchronously
+        # Starting input-output loop to capture events asynchronously.
+        # KeyboardInterrupt stops the loop.
         loop = IOLoop.current()
         try:
             loop.start()

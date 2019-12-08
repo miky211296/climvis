@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from climvis import wind_data
+from scipy.stats import linregress
 
 def plot_annual_cycle(df, filepath=None):
 
