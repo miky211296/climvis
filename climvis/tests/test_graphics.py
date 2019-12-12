@@ -81,18 +81,19 @@ def test_trend_prec(tmpdir):
 
 def test_plot_windrose(tmpdir):
     """Test function for the windrose plot.
-    
+
     Author: Michele Giurato
-    
+
     """
 
-    url = wind_data.url_from_input('ellboegen', '3', wind_data.base_url)        
+    url = wind_data.url_from_input('ellboegen', '3', wind_data.base_url)
     req = urlopen(Request(url)).read()
     data = json.loads(req.decode('utf-8'))
-    data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for ds in data['datumsec']]
-    
+    data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for ds
+                    in data['datumsec']]
+
     direction, wind_speed = data['dd'], data['ff']
-    
+
     # Check that figure is created
     fpath = str(tmpdir.join('windrose.png'))
     graphics.plot_windrose(direction, wind_speed, filepath=fpath)

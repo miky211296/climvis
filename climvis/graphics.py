@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from climvis import wind_data
 from scipy.stats import linregress
 
+
 def plot_annual_cycle(df, filepath=None):
 
     z = df.grid_point_elevation
@@ -32,7 +33,7 @@ def plot_annual_cycle(df, filepath=None):
 
 
 def plot_trend_temp(df, filepath=None):
-    """Calculates and plots the annual mean and trend of temperature 
+    """Calculates and plots the annual mean and trend of temperature
     for the period 1901 - 2018 for this grid point.
 
     Author
@@ -76,7 +77,6 @@ def plot_trend_temp(df, filepath=None):
     plt.ylabel('Temperature (°C)')
     plt.xlabel('Years')
     plt.legend(loc='best')
-   
 
     if filepath is not None:
         plt.savefig(filepath, dpi=150)
@@ -86,7 +86,7 @@ def plot_trend_temp(df, filepath=None):
 
 
 def plot_trend_prec(df, filepath=None):
-    """ Calculates and plots the annual mean and trend of precipitation 
+    """ Calculates and plots the annual mean and trend of precipitation
     for the period 1901 - 2018 for this grid point.
 
     Author
@@ -130,7 +130,6 @@ def plot_trend_prec(df, filepath=None):
     plt.ylabel('Precipitation (mm)')
     plt.xlabel('Years')
     plt.legend(loc='best')
-  
 
     if filepath is not None:
         plt.savefig(filepath, dpi=150)
@@ -139,32 +138,32 @@ def plot_trend_prec(df, filepath=None):
     return f_trend_prc
 
 
-def plot_windrose(wind_direction, wind_speed, filepath = None):
+def plot_windrose(wind_direction, wind_speed, filepath=None):
     """creates windrose plot in windrose.png
-    
+
     Author: Michele
 
     Parameters
     ----------
     wind_direction: list
         time series of wind direction
-    
+
     wind_speed: list
-        time series of wind speed   
-        
+        time series of wind speed
+
     filepath: str, optional
         The path where save the figure
-        
+
     Returns
     -------
     html file
     """
-    fig = plt.figure(figsize=(3,3))
-    #hard-coded: inserting fig as optional parameter, the ax output refers to
-    #fig itself.
+    fig = plt.figure(figsize=(3, 3))
+    # hard-coded: inserting fig as optional parameter, the ax output refers to
+    # fig itself.
     ax = wind_data.windrose_data(wind_direction,wind_speed, fig)
-    
+
     if filepath is not None:
         fig.savefig(filepath, dpi=150)
-        
+
     return fig
