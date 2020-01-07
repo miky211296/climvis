@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from climvis import core, cfg, graphics, wind_data
+from climvis import core, cfg, graphics
 from datetime import datetime, timedelta
 from urllib.request import Request, urlopen
 import json
@@ -86,7 +86,7 @@ def test_plot_windrose(tmpdir):
 
     """
 
-    url = wind_data.url_from_input('ellboegen', '3', wind_data.base_url)
+    url = core.url_from_input('ellboegen', '3', core.base_url)
     req = urlopen(Request(url)).read()
     data = json.loads(req.decode('utf-8'))
     data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for ds

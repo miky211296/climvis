@@ -124,6 +124,8 @@ def windvis():
     windparser.add_argument('-s', '--station', default='innsbruck',
                             choices=possible_stations,
                             help='Specify the station.')
+#    windparser.add_argument('-a', '--all', default=possible_stations,
+#                            help='Specify the station.')
     windparser.add_argument('-d', '--days', default='innsbruck',
                             choices=possible_days, help='Specify the days.')
     windparser.add_argument('--no-browser', action='store_const', const=True,
@@ -146,4 +148,3 @@ def windvis():
     if arguments.station and arguments.days is not None:
         station, days = arguments.station, arguments.days
         windvis_windrose(station, days, arguments.nobrowser)
-        

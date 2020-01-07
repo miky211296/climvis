@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from climvis import wind_data
+from climvis import core
 from scipy.stats import linregress
 
 
@@ -161,7 +161,7 @@ def plot_windrose(wind_direction, wind_speed, filepath=None):
     fig = plt.figure(figsize=(3, 3))
     # hard-coded: inserting fig as optional parameter, the ax output refers to
     # fig itself.
-    ax = wind_data.windrose_data(wind_direction,wind_speed, fig)
+    ax = core.windrose_data(wind_direction, wind_speed, fig)
 
     if filepath is not None:
         fig.savefig(filepath, dpi=150)
