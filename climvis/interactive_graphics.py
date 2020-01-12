@@ -14,6 +14,7 @@ from bokeh.server.server import Server
 from tornado.ioloop import IOLoop
 
 # Initializing a holoviews renderer. It will be used in the class.
+hv.extension('bokeh')
 renderer = hv.renderer('bokeh')
 
 # Initializing boundaries for function inputs.
@@ -253,23 +254,33 @@ class ClimvisHVPlot:
         out_of_bounds(lon, lat, 'ClimvisHVPlot.combined')
         self.reinitialize(lon, lat, self._overlay)
 
+        real_coords = real_lon_lat(lon, lat)
+        real_lon = real_coords['lon']
+        real_lat = real_coords['lat']
+
         # Creating the holoviews Curve and Bars objects for temperature and
         # precipitation respectively
         tmp = hv.Curve(annual_cycle_for_hv(lon, lat, variable='tmp'),
+                       label='Real lon, lat: {} {}'.format(real_lon,
+                                                           real_lat)
                        ).opts(color='red', tools=['hover'])
         pre = hv.Bars(annual_cycle_for_hv(lon, lat, variable='pre'),
                       ).opts(tools=['hover'])
 
         # Formatting xlables and ylabels
         if self._overlay:
-            out = (pre * tmp).opts(xlabel='Month',
-                                   ylabel='Precipitation and Temperature '
-                                          '(°C and mm mth^-1)')
+            out = hv.Overlay([pre, tmp.relabel('')],
+                             label='Real lon, lat: {} {}'.format(real_lon,
+                                                                 real_lat))
+            out.opts(xlabel='Month',
+                     ylabel='Prec. and Temp. '
+                            '(°C and mm mth^-1)')
+
         else:
-            out = (pre.opts(xlabel='Month',
-                            ylabel='Precipitation (mm mth^-1)') +
-                   tmp.opts(xlabel='Month',
-                            ylabel='Temperature (°C)'))
+            out = hv.Layout([tmp.opts(xlabel='Month',
+                                      ylabel='Temperature (°C)'),
+                             pre.opts(xlabel='Month',
+                             ylabel='Precipitation (mm mth^-1)')])
 
         return out
 
@@ -333,6 +344,12 @@ class ClimvisHVPlot:
                                                     range=(-90, 90),
                                                     default=self._lat)]
                                 )
+        
+#        real_coords = real_lon_lat(self._lon, self._lat)
+#        real_lon = real_coords['lon']
+#        real_lat = real_coords['lat']        
+#                           
+#        hv_dmap.opts(title='New title for Overlay {} {}'.format(real_lon, real_lat))
 
         return hv_dmap
 

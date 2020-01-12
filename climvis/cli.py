@@ -58,6 +58,9 @@ def windvis_windrose(station, days, nobrowser):
         webbrowser.get().open_new_tab(html_path_windrose)
 
 
+def cruvis_parser():
+
+
 def cruvis():
     """Entry point for the cruvis application script"""
     # Implemented by Stefano
@@ -100,6 +103,11 @@ def cruvis():
 
     if arguments.version:
         print_version()
+
+    if arguments.interactive is not None and arguments.loc is None:
+        print('Error, --interactive also needs --loc argument.')
+        parser.print_help()
+        sys.exit(0)
 
     if arguments.loc is not None:
         lon, lat = arguments.loc
