@@ -59,11 +59,8 @@ def windvis_windrose(station, days, nobrowser):
 
 
 def cruvis_parser():
+    """Parser for cruvis"""
 
-
-def cruvis():
-    """Entry point for the cruvis application script"""
-    # Implemented by Stefano
     parser = argparse.ArgumentParser(prog='cruvis',
                                      description="CRU data visualization at"
                                      "a selected location.",
@@ -95,6 +92,14 @@ def cruvis():
                             ' and precipitation at the given location.\n'
                             'Warning: it might be slow.')
 
+    return parser
+
+
+def cruvis():
+    """Entry point for the cruvis application script"""
+    # Implemented by Stefano
+
+    parser = cruvis_parser()
     arguments = parser.parse_args()
 
     if len(sys.argv) < 2:
@@ -114,9 +119,9 @@ def cruvis():
         cruvis_location(lon, lat, arguments.nobrowser, arguments.interactive)
 
 
-def windvis():
-    """Entry point for the windvis application script"""
-    # Implemented by Michele
+def windvis_parser():
+    """Parser for windvis"""
+
     possible_stations = ['innsbruck', 'ellboegen', 'obergurgl', 'sattelberg']
     possible_days = ['1', '3', '7']
     windparser = argparse.ArgumentParser(prog='windvis',
@@ -145,7 +150,16 @@ def windvis():
                             'ignore and print the path to '
                             'the html file instead.')
 
+    return windparser
+
+
+def windvis():
+    """Entry point for the windvis application script"""
+    # Implemented by Michele
+
+    windparser = windvis_parser()
     arguments = windparser.parse_args()
+
     if len(sys.argv) < 2:
         windparser.print_help()
         sys.exit(0)

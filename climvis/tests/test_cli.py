@@ -30,20 +30,49 @@ def test_windvis_windrose(capsys):
     assert 'File successfully generated at: ' in captured.out
     
 
-def test_cruvis(bash):
-    assert 'CRU data visualization at' in bash.run_function('cruvis -h')
-#    cli.cruvis()
-#    captured = capsys.readouterr()
-#    assert 'CRU data visualization at' in captured.out
-#def test_print_html(capsys):
-#
-#    cruvis_io(['-l', '12.1', '47.3', '--no-browser'])
-#    captured = capsys.readouterr()
-#    assert 'File successfully generated at:' in captured.out
-#
-#
-#def test_error(capsys):
-#
-#    cruvis_io(['-l', '12.1'])
-#    captured = capsys.readouterr()
-#    assert 'cruvis --loc needs lon and lat parameters!' in captured.out
+def test_cruvis_parser(capsys):
+    parser = cli.cruvis_parser()
+    try:
+        arguments = parser.parse_args(['-h'])
+    except SystemExit:
+        captured = capsys.readouterr()
+    assert 'CRU data visualization at' in captured.out
+    
+    arguments = parser.parse_args(['-i', '-l', '23', '45'])
+    assert arguments.interactive is True
+    assert arguments.nobrowser is False
+    assert arguments.loc is not None
+    lon, lat = arguments.loc
+    assert lon == 23
+    assert lat == 45
+    
+    arguments = parser.parse_args(['--no-browser', '-l', '23', '45'])
+    assert arguments.interactive is False
+    assert arguments.nobrowser is True
+    assert arguments.loc is not None
+    lon, lat = arguments.loc
+    assert lon == 23
+    assert lat == 45
+    
+    arguments = parser.parse_args(['-v'])
+    captured = capsys.readouterr()
+    assert arguments.version is True
+
+
+def test_windvis_parser(capsys):
+    parser = cli.windvis_parser()
+    try:
+        arguments = parser.parse_args(['-h'])
+    except SystemExit:
+        captured = capsys.readouterr()
+    assert 'wind data visualization at' in captured.out
+
+    arguments = parser.parse_args(['-s', 'innsbruck', '-d',
+                                   '3', '--no-browser'])
+    assert arguments.station == 'innsbruck'
+    assert arguments.days == 3
+    assert arguments.nobrowser is True
+
+    arguments = parser.parse_args(['-v'])
+    captured = capsys.readouterr()
+    assert arguments.version is True
