@@ -21,18 +21,18 @@ GOOGLE_API_KEY = 'AIzaSyAjPH6t6Y2OnPDNHesGFvTaVzaaFWj_WCE'
 base_url = 'http://meteo145.uibk.ac.at'
 url = 'http://meteo145.uibk.ac.at/innsbruck/3'
 
-# Parse the given url
-try:
-    req = urlopen(Request(url)).read()
-except URLError:
-    sys.exit('cannot reach the website. Check the connection.')
-
-# Read the data
-data = json.loads(req.decode('utf-8'))
-
-
-data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for
-                ds in data['datumsec']]
+## Parse the given url
+#try:
+#    req = urlopen(Request(url)).read()
+#except URLError:
+#    sys.exit('cannot reach the website. Check the connection.')
+#
+## Read the data
+#data = json.loads(req.decode('utf-8'))
+#
+#
+#data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for
+#                ds in data['datumsec']]
 
 
 def haversine(lon1, lat1, lon2, lat2):
@@ -221,6 +221,20 @@ def perc_dir_from_data(data):
         Dictionary of the wind direction percentages. Keys are the 8 sectors.
         e.g. 'N'. Values are the percentages.
     """
+    
+#    # Parse the given url
+#    try:
+#        req = urlopen(Request(url)).read()
+#    except URLError:
+#        sys.exit('cannot reach the website. Check the connection.')
+#
+#    # Read the data
+#    data = json.loads(req.decode('utf-8'))
+#
+#
+#    data['time'] = [datetime(1970, 1, 1) + timedelta(milliseconds=ds) for
+#                ds in data['datumsec']]
+
     n_sectors = 8
     sector = 360/n_sectors
 
@@ -228,7 +242,7 @@ def perc_dir_from_data(data):
 
     wind_dir_count = {name: 0 for name in sector_names}
 
-    # count how many wind data directions fall in a certain sector
+    # count how many wind directions fall in a certain sector
     for wind_dir in data['dd']:
         sec = int(((wind_dir + int(sector/2)) % 360) / sector)
         wind_dir_count[sector_names[sec]] += 1
