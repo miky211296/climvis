@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from climvis import core
 from scipy.stats import linregress
 
 
@@ -145,5 +146,29 @@ def plot_trend_prec(df, filepath=None):
     return f_trend_prc
 
 
+def plot_windrose(wind_direction, wind_speed, filepath=None):
+    """creates windrose plot in windrose.png
+    Author: Michele
+    Parameters
+    ----------
+    wind_direction: list
+        time series of wind direction
+    wind_speed: list
+        time series of wind speed
+    filepath: str, optional
+        The path where save the figure
+    Returns
+    -------
+    html file
+    """
+    fig = plt.figure(figsize=(3, 3))
+    # hard-coded: inserting fig as optional parameter, the ax output refers to
+    # fig itself.
+    ax = core.windrose_data(wind_direction, wind_speed, fig)
+
+    if filepath is not None:
+        fig.savefig(filepath, dpi=150)
+
+    return fig
 
 
