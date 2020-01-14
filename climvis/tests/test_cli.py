@@ -70,7 +70,7 @@ def test_windvis_parser(capsys):
     arguments = parser.parse_args(['-s', 'innsbruck', '-d',
                                    '3', '--no-browser'])
     assert arguments.station == 'innsbruck'
-    assert arguments.days == 3
+    assert arguments.days == '3'
     assert arguments.nobrowser is True
 
     arguments = parser.parse_args(['-v'])
